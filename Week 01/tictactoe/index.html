@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <style>
+      .cell {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        vertical-align: middle;
+        text-align: center;
+        border: 1px solid #fff;
+        background: green;
+      }
+    </style>
+  </head>
+  <body>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    
+    <div id="board"></div>
+
+    <script>
+
+      let color = 1;
+      let hasWinner = false;
+      let pattern = [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ]
+/**
+      let pattern = [
+        [2, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ]*/
+
+      /**
+      * @params {i} number  行
+      * @params {j} number  列
+      */
+      function move(i,j) {
+        
+        let current = pattern[i][j];
+
+        if (current) { return }
+
+        // 分出胜负之后，询问是否再来一局 
+        if (hasWinner) {
+          if(confirm('是否再来一局？')){
+            pattern = [
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ]
+
+            return ;
+          };
+        }
+
+        pattern[i][j] = 3 - color;
+
+        color = 3 - color;
+
+        show();
+
+        if (check()) {
+          alert(color === 2 ? "⭕️ is winner" : "❌ is winner")
+          hasWinner = true;
+        }
+      }
+      
+      // 检测是否有3个连在一起的数字
+      function check() {
+          // 单排横向检查
+          for(let i = 0; i < 3; i++) {
+            let win = true;
+            for (let j = 0; j < 3; j++ ) {
+              if (pattern[i][j] !== color ) {
+                win =  false
+              }
+            }
+
+            if (win) {
+              return true
+            }
+          }
+
+          // 单列检查
+          for(let i = 0; i < 3; i++) {
+            let win = true;
+            for (let j = 0; j < 3; j++ ) {
+              if (pattern[j][i] !== color ) {
+                win =  false
+              }
+            }
+
+            if (win) {
+              return true
+            }
+          }
+          // 右上斜线
+          {
+            let win = true;
+            for (let i = 0; i< 3; i++) {
+              
+              if (pattern[i][2-i] !== color ) {
+                win =  false
+              }
+            }
+
+            if(win) {
+              return true
+            }
+          }
+
+          // 左上斜线
+          {
+            let win = true;
+            for (let i = 0; i< 3; i++) {
+              
+              if (pattern[i][i] !== color ) {
+                win =  false
+              }
+            }
+             if(win) {
+              return true
+            }
+          }
+
+          return false
+
+      }
+
+      function show() {
+        let board = document.getElementById('board');
+        board.innerHTML = null;
+        for(let i = 0; i < pattern.length; i++) {
+          for (let j = 0; j < pattern[i].length; j++ ) {
+            let cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.innerText = 
+               pattern[i][j] === 2 ? "⭕️" :
+               pattern[i][j] === 1 ? "❌" : "" ;
+            
+            cell.addEventListener('click',() => move( i, j))
+            board.appendChild(cell)
+          }
+          board.appendChild(document.createElement('br'));
+        }
+      }
+      show();
+    </script>
+
+
+  </body>
+</html>
