@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
 <html>
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title></title>
+    <title>TicTacToe</title>
     <style>
       .cell {
         display: inline-block;
@@ -22,10 +18,6 @@
     </style>
   </head>
   <body>
-    <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-    
     <div id="board"></div>
 
     <script>
@@ -37,7 +29,7 @@
         [0, 0, 0],
         [0, 0, 0],
       ]
-/**
+      /**
       let pattern = [
         [2, 0, 0, 0, 0],
         [0, 1, 0, 0, 0],
@@ -66,23 +58,56 @@
             ]
 
             return ;
-          };
+          } else {
+            return
+          }
         }
 
-        pattern[i][j] = 3 - color;
+        pattern[i][j] = color; // ?
+
+        if (check(pattern, color)) {
+          alert(color === 2 ? "⭕️ is winner" : "❌ is winner")
+          hasWinner = true;
+        }
 
         color = 3 - color;
 
         show();
 
-        if (check()) {
-          alert(color === 2 ? "⭕️ is winner" : "❌ is winner")
-          hasWinner = true;
+        if(willWin(pattern, color)) {
+          alert(color === 2 ? "⭕️ will win !" : "❌ wiil win! ")
         }
+       
+      }
+
+      function clone(pattern) {
+        return JSON.parse(JSON.stringify(pattern));
+      } 
+
+      // 预检willWin
+      function willWin(pattern, color) {
+
+        for(let i = 0; i < 3; i++) {
+          for(let j = 0; j < 3; j++) {
+
+            // 如果当前位置有棋子 掠过
+            if (pattern[i][j]) {
+              continue;
+            }
+
+            let tmp = clone(pattern);
+            tmp[i][j] = color;
+
+            if (check(tmp, color)) {
+              return true
+            }
+          }
+        }
+        return false
       }
       
       // 检测是否有3个连在一起的数字
-      function check() {
+      function check(pattern, color) {
           // 单排横向检查
           for(let i = 0; i < 3; i++) {
             let win = true;
@@ -140,7 +165,6 @@
           }
 
           return false
-
       }
 
       function show() {
