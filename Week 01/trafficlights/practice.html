@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>红绿灯</title>
+  </head>
+  <body>
+    <h1>一个路口的红绿灯，按照绿灯10s，黄灯2s，红灯5s的顺序无限循环</h1>
+
+    <script>
+      function Red() {
+        new Promise((resolve)=>{
+          let timer = setInterval(() => {
+            console.log('red')
+          }, 1000);
+
+          setTimeout(() => {
+            clearInterval(timer)
+            resolve();
+          }, 5000);
+
+        }).then(()=>{
+          Green()
+        })
+      }
+
+      function Green() {
+        new Promise((resolve)=>{
+          let timer = setInterval(() => {
+            console.log('Green')
+          }, 1000);
+
+          setTimeout(() => {
+            clearInterval(timer)
+            resolve();
+          }, 10000);
+
+        }).then(()=>{
+          Yellow()
+        })
+      }
+
+      function Yellow() {
+        new Promise((resolve)=>{
+          let timer = setInterval(() => {
+            console.log('Yellow')
+          }, 1000);
+
+          setTimeout(() => {
+            clearInterval(timer)
+            resolve();
+          }, 2000);
+        }).then(()=>{
+          Red()
+        })
+      }
+
+      Red();
+
+    </script>
+
+  </body>
+</html>
