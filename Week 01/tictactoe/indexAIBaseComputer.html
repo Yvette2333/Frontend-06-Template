@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TicTacToe 一维数组unary人机对战</title>
+    <style>
+      .cell {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        vertical-align: middle;
+        text-align: center;
+        border: 1px solid #fff;
+        background: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="board"></div>
+    <h1>⭕️ is 2 , ❌ is 1</h1>
+    <script>
+
+      let color = 1;
+      let hasWinner = false;
+      let pattern = [
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+      ]
+      /**
+      * @params {i} number  行
+      * @params {j} number  列
+      */
+      function userMove(i,j) {
+        
+        let current = pattern[i * 3 + j];
+
+        if (current) { return }
+
+        // 分出胜负之后，询问是否再来一局 
+        if (hasWinner) {
+          if(confirm('是否再来一局？')){
+            pattern = [
+              0, 0, 0,
+              0, 0, 0,
+              0, 0, 0,
+            ]
+
+            return  show();
+          } else {
+            return
+          }
+        }
+
+        // 落子
+        pattern[i * 3 + j] = color;
+
+        if (check(pattern, color)) {
+          console.log(color === 2 ? "⭕️ is winner" : "❌ is winner")
+          hasWinner = true;
+        }
+
+        color = 3 - color;
+
+        show();
+
+        if(willWin(pattern, color)) {
+          console.log(color === 2 ? "⭕️ will win !" : "❌ wiil win! ")
+        }
+
+        console.log(bestChoice(pattern, color));
+
+        computerMove();
+      }
+      // 机器下
+      function computerMove(i,j) {
+        let choice = bestChoice(pattern, color);
+        if (choice.point) {
+          const [x, y] = choice.point;
+          pattern[x * 3 + y] = color
+        }
+        color = 3 - color;
+        show();
+      }
+
+      function clone(pattern) {
+        // return JSON.parse(JSON.stringify(pattern));
+        return Object.create(pattern);
+      } 
+      // 预检willWin
+      function willWin(pattern, color) {
+
+        for(let i = 0; i < 3; i++) {
+          for(let j = 0; j < 3; j++) {
+
+            // 如果当前位置有棋子 掠过
+            if (pattern[i * 3 + j]) {
+              continue;
+            }
+
+            let tmp = clone(pattern);
+            tmp[i * 3 + j] = color;
+
+            if (check(tmp, color)) {
+              // willwin返回将要赢的坐标点
+              return [i, j]  
+            }
+          }
+        }
+        return null
+      }
+      // 最优策略
+      function bestChoice(pattern, color) {
+        let p ;
+        // 如果自己将要赢的机会，那么直接返回当前AI所检测的点
+        // 此处willWin 更改返回内容
+        if (p = willWin(pattern, color)) {
+          return {
+            point: p, // 赢的坐标
+            result: 1,
+            color
+          }
+        }
+
+         // 默认取值-2  -1  0 和棋 1 赢 
+        let result = -2;
+        let point = null;
+        
+        // 遍历棋盘中的空位，获取使对方面临最差局面的坐标
+        outer: for(let i = 0; i < 3; i++) {
+          for(let j = 0; j < 3; j++) {
+            // 略过已有的落子格
+            if(pattern[i * 3 + j]) {
+              continue;
+            }
+
+            // 获取使对方面临最差局面的坐标
+            let tmp = clone(pattern);
+            tmp[i * 3 + j] = color;
+            let r = bestChoice(tmp, 3 - color).result;
+            // 对方的赢 表示己输， 对方只有是-1时，我方才可以赢。
+            if (-r > result) {
+              result = -r;
+              point = [i,j];
+            }
+
+            // * 胜负剪枝 ---跳出当前循环体
+            if (result === 1) {
+              break outer;
+            }
+          }
+        }
+       
+        return {
+          point,
+          result: point ? result : 0,
+          color
+        }
+      }
+      // 检测是否有3个连在一起的数字
+      function check(pattern, color) {
+          // 单排横向检查
+          for(let i = 0; i < 3; i++) {
+            let win = true;
+            for (let j = 0; j < 3; j++ ) {
+              if (pattern[i * 3 +j] !== color ) {
+                win =  false
+              }
+            }
+
+            if (win) {
+              return true
+            }
+          }
+
+          // 单列检查
+          for(let i = 0; i < 3; i++) {
+            let win = true;
+            for (let j = 0; j < 3; j++ ) {
+              if (pattern[j * 3 + i ] !== color ) {
+                win =  false
+              }
+            }
+
+            if (win) {
+              return true
+            }
+          }
+          // 右上斜线 \
+          {
+            let win = true;
+            for (let i = 0; i< 3; i++) {
+              if (pattern[i * 3 + i] !== color ) {
+                win =  false
+              }
+            }
+
+            if(win) {
+              return true
+            }
+          }
+
+          // 左上斜线  /
+          {
+            let win = true;
+            for (let i = 0; i< 3; i++) {
+              if (pattern[i * 3 + 2 - i] !== color ) {
+                win =  false
+              }
+            }
+             if(win) {
+              return true
+            }
+          }
+
+          return false
+      }
+
+      function show() {
+        let board = document.getElementById('board');
+        board.innerHTML = null;
+        for(let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++ ) {
+            let cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.innerText = 
+               pattern[i * 3 + j] === 2 ? "⭕️" :
+               pattern[i * 3 + j] === 1 ? "❌" : `${i},${j}, ${i * 3 + j}` ;
+            
+            cell.addEventListener('click',() => userMove( i, j))
+            board.appendChild(cell)
+          }
+          board.appendChild(document.createElement('br'));
+        }
+      }
+      show();
+
+      console.log(bestChoice(pattern, color));
+
+       // 不能输
+    </script>
+
+
+  </body>
+</html>
