@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>五子棋</title>
+    <style>
+      .cell {
+        display: inline-block;
+        width: 55px;
+        height: 55px;
+        line-height: 55px;
+        vertical-align: middle;
+        text-align: center;
+        border: 1px solid #fff;
+        background: green;
+        font-size:  12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="board"></div>
+    <h1>⭕️ is 2 , ❌ is 1</h1>
+    <script>
+
+      let color = 1;
+      let hasWinner = false;
+      let pattern = [];
+      createPattern();
+
+      function createPattern(){
+        for(let i = 0; i< 15 * 15; i++) {
+          pattern[i] = 0
+        }
+      } 
+      // 执行
+      function move(i,j) {
+        
+        let current = pattern[i * 15 + j];
+
+        if (current) { return }
+
+        // 分出胜负之后，询问是否再来一局 
+        if (hasWinner) {
+          if(confirm('是否再来一局？')){
+            createPattern();
+            return  show();
+          } else {
+            return
+          }
+        }
+
+        // 落子
+        pattern[i * 15 + j] = color;
+
+        // 检查是否有5个连续的棋子
+        if (check(pattern, color)) {
+          console.log(color === 2 ? "⭕️ is winner" : "❌ is winner")
+          hasWinner = true;
+        }
+
+        color = 3 - color;
+
+
+        if(willWin(pattern, color)) {
+          console.log(color === 2 ? "⭕️ will win !" : "❌ wiil win! ")
+        }
+        show();
+
+        // console.log(bestChoice(pattern, color));
+      }
+
+      function clone(pattern) {
+        return Object.create(pattern);
+      } 
+      // 预检willWin
+      function willWin(pattern, color) {
+        for(let i = 0; i < 15; i++) {
+          for(let j = 0; j < 15; j++) {
+
+            // 如果当前位置有棋子 掠过
+            if (pattern[i * 15 + j]) {
+              continue;
+            }
+
+            let tmp = clone(pattern);
+            tmp[i * 15 + j] = color;
+            console.log(check(tmp, color, 4))
+
+            if (check(tmp, color, 4)) {
+              // willwin返回将要赢的坐标点
+              return [i, j]  
+            }
+          }
+        }
+        return null
+      }
+      // 最优策略
+      let limit = 0;
+      function bestChoice(pattern, color) {
+        let p ;
+        limit++;
+        // 如果自己将要赢的机会，那么直接返回当前AI所检测的点
+        // 此处willWin 更改返回内容
+        if (p = willWin(pattern, color)) {
+          return {
+            point: p, // 赢的坐标
+            result: 1,
+            color
+          }
+        }
+
+        // 默认取值-2  -1  0 和棋 1 赢 
+        let result = -2;
+        let point = null;
+        // 遍历棋盘中的空位，获取使对方面临最差局面的坐标
+        outer: for(let i = 0; i < 15; i++) {
+          for(let j = 0; j < 15; j++) {
+            // 略过已有的落子格
+            if(pattern[i * 15 + j]) {
+              continue;
+            }
+
+            // 获取使对方面临最差局面的坐标
+            let tmp = clone(pattern);
+            tmp[i * 15 + j] = color;
+
+            // 不断调用对方最优策略。如何设置递归深度？
+            let oop;
+            if (limit < 1000 ){
+                oop = bestChoice(tmp, 3 - color);
+            } else {
+              oop = {
+                point: null, // 赢的坐标
+                result: -3,
+                color,
+                msg: 'stack overflow'
+              }
+            }
+
+            // 对方的赢 表示己输， 对方只有是-1时，我方才可以赢。
+            if (-oop.result > result && !oop.msg) {
+              result = -oop.result;
+              point = [i, j];
+            }
+
+            // * 胜负剪枝 ---跳出当前循环体
+            if (result === 1) {
+              break outer;
+            }
+          }
+        }
+       
+        return {
+          point,
+          result: result === -3 ? -3 : (point ? result : 0) ,
+          color
+        }
+      }
+      // 检测是否有5个连在一起的数字 难度：**
+      function check(pattern, color, repeatNum = 5) {
+
+          // 单排横向检查 连续5个存在
+          for(let i = 0; i < 15; i++) {
+            let win = false;
+            let rowColor = [];
+            for (let j = 0; j < 15; j++ ) {
+              rowColor.push(pattern[i * 15 +j]);
+            }
+            // 找到连续5个重复的color即可
+            if (includesRepeat(rowColor,color,repeatNum)) {
+              return true
+            }
+          }
+
+          // 单排列检查 连续5个存在
+          for(let i = 0; i < 15; i++) {
+            let win = false;
+            let rowColor = [];
+            for (let j = 0; j < 15; j++ ) {
+              rowColor.push(pattern[j * 15 + i]);
+            }
+            // 找到连续5个重复的color即可
+            if (includesRepeat(rowColor,color,repeatNum)) {
+              return true
+            }
+          }
+
+          // 左下斜\ 
+          {
+            let win = false;
+            // 此处为中轴正负需要加减的 xy范围，即 中心点到上边界与左边界的距离
+            outer: for (let i = -7; i< 7; i++) {
+              let r = LeftSlash(i,repeatNum);
+              if (r) {
+                win = true;
+                break outer
+              }
+            } 
+            if (win) {
+              return win;
+            }
+          }
+
+          // 右下斜 /
+          {
+            let win = false;
+            // 此处为中轴正负需要加减的 xy范围，即 中心点到上边界与左边界的距离
+            outer: for (let i = -7; i< 7; i++) {
+              let r = RightSlash(i,repeatNum);
+              if (r) {
+                win = true;
+                break outer
+              }
+            } 
+            if (win) {
+              return win;
+            }
+          }
+
+          return false
+      }
+      // 左下斜\ 
+      function LeftSlash(startDot, repeatNum){
+        let rowColor = [];
+        for (let i = 0; i< 15; i++) {
+            rowColor.push(pattern[i * 15 + i + startDot]);
+        } 
+        // 找到连续5个重复的color即可
+        if (includesRepeat(rowColor,color,repeatNum)) {
+          return true
+        }
+        return false
+      }
+      // 右下斜 /
+      function  RightSlash(startDot, repeatNum){
+        let rowColor = [];
+        for (let i = 0; i< 15; i++) {
+            rowColor.push(pattern[i * 15 + 14 - i + startDot]);
+        } 
+        // 找到连续5个重复的color即可
+        if (includesRepeat(rowColor,color,repeatNum)) {
+          return true
+        }
+        return false
+      }
+      // 判断是否包含连续的 
+      function includesRepeat(rowColor,color,repeatNum) {
+        return rowColor.join('').includes(`${color}`.repeat(repeatNum));
+      }
+
+      function show() {
+        let board = document.getElementById('board');
+        board.innerHTML = null;
+        for(let i = 0; i < 15; i++) {
+          for (let j = 0; j < 15; j++ ) {
+            let cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.innerText = 
+               pattern[i * 15 + j] === 2 ? "⭕️" :
+               pattern[i * 15 + j] === 1 ? "❌" : `${i},${j}, ${i * 15 + j}` ;
+            
+            cell.addEventListener('click',() => move( i, j))
+            board.appendChild(cell)
+          }
+          board.appendChild(document.createElement('br'));
+        }
+      }
+      show();
+
+      // console.log(bestChoice(pattern, color));
+
+    </script>
+
+
+  </body>
+</html>
