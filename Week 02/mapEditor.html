@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>地图编辑器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      * {
+        margin: 0;
+        padding: 0; 
+      }
+      #board {
+        width: 1325px;
+        line-height: 12px;
+        box-sizing: border-box;
+      }
+      .cell {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-bottom: 0px;
+        border-right: 1px solid #fff;
+        border-bottom: 1px solid #fff;
+        background-color: #f5f5f5;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="board"></div>
+    <button onclick="save()">save</button>
+    <script>
+        let map = localStorage.getItem('map') ? JSON.parse(localStorage.getItem('map')) : Array(10000).fill(0);
+
+        function drawMap() {
+          let board = document.getElementById('board');
+          for(let i = 0; i < 100; i++) {
+            for (let j = 0; j < 100; j++ ) {
+              let cell = document.createElement('div');
+              cell.classList.add('cell');
+
+              if(map[i * 100 + j] === 1) {
+                cell.style.backgroundColor = '#ccc';
+              }
+
+              cell.addEventListener('mousemove',()=>{
+                if (mouseDownFlag){
+                  // 右键点击也属于mousedown
+                  if(clearFlag) {
+                    cell.style.backgroundColor = '';
+                    map[i * 100 + j] = 0;
+                  } else {
+                    cell.style.backgroundColor = '#ccc';
+                    map[i * 100 + j] = 1;
+                  }
+                }
+              })
+
+              board.appendChild(cell);
+            }
+          }
+        }
+
+        drawMap();
+
+        let mouseDownFlag = false;
+        let clearFlag = false;
+
+        window.addEventListener('mousedown',(e)=> {
+          console.log(e.which);
+          
+          clearFlag = e.which === 3;
+
+          mouseDownFlag = true;
+        });
+
+        window.addEventListener('mouseup',()=> mouseDownFlag = false);
+        // 阻止菜单右键
+        window.addEventListener('contextmenu',(e)=> e.preventDefault());
+
+        function save() {
+          localStorage.setItem('map',JSON.stringify(map));
+        }
+
+    </script>
+  </body>
+</html>
