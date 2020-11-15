@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>LL词法分析 ｜ 四则运算</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <script>
+      const regexp = /([0-9\.]+)|([ \s]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+      const dictionary = ["Number", "Whitespace", "LineTerminator", "*","/","+","-"];
+
+
+      function* tokenize(source) {
+        let result = null;
+
+        // 判断匹配长度与前进长度不一样长
+        let lastIndex = 0; 
+
+        while(true) {
+          lastIndex = regexp.lastIndex;
+          result = regexp.exec(source);
+          console.log(lastIndex)
+          // 使用正则匹配regexp,保证操作符存在
+          if(!result) {
+            break;
+          }
+          // 如果新生长的内容与旧内容index不一致，那么生成不认识的字符即略过
+          if (regexp.lastIndex - lastIndex > result[0].length) {
+            break;
+          }
+
+          let token = {
+            type: null,
+            value: null,
+          }
+
+          for(let i = 1; i <= dictionary.length; i++) {
+            if (result[i]){
+                token.type = dictionary[i-1];
+            }
+          }
+          // 具体匹配的类型
+          token.value = result[0];
+          yield token
+        }
+
+        yield result
+      }
+
+      for(let token of tokenize("1024 + 10 + 25")){
+        console.log(token)
+      }
+
+      const res = tokenize("1024 + 10 + 25");
+      console.log(res);
+    </script>
+  </body>
+</html>

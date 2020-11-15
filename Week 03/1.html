@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>LL词法分析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <script>
+      const regexp = /([0-9\.]+)|([\t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+      const dictionary = ["Number", "Whitespace", "LineTerminator", "*","/","+","-"];
+
+
+      function tokenize(source) {
+        let result = null;
+
+        while(true) {
+          result = regexp.exec(source);
+          // 使用正则匹配regexp
+          if(!result) {
+            break;
+          }
+
+          for(let i = 1; i <=dictionary.length; i++) {
+            if (result[i]){
+              console.log(dictionary[i-1])
+            }
+          }
+          console.log(result)
+        }
+      }
+
+      tokenize("1024 + 10 + 25");
+
+    </script>
+  </body>
+</html>
