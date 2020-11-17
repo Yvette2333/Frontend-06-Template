@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>字典树Trie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <p>字典树最小/</p>
+      <script>
+
+        let $ = Symbol("$");
+        class Trie {
+          constructor() {
+            this.root = Object.create(null);
+          } 
+          insert(word) {
+            let node = this.root;
+            for(let c of word) {
+              if(!node[c]) {
+                node[c] = Object.create(null);
+              }
+              node = node[c];
+            }
+            // 增加叶节点终结符
+            if(!($ in node)){
+              node[$] = 0
+            }
+             node[$]++
+          }
+
+          less() {
+            let min = 0;
+            let minWord = null;
+            let visit = (node, word) => {
+              // 当前访问的节点如果出现次数最多，则替换相关信息
+              if(node[$] && node[$] <= 1) {
+                min = node[$];
+                minWord = word;
+              }
+
+              for(let p in node) {
+                visit(node[p], word+p);
+              }
+            }
+
+            visit(this.root, "");
+            console.log(minWord, min)
+          }
+
+          most(){
+            let max = 0;
+            let maxWord = null;
+            let visit = (node, word) => {
+              // 当前访问的节点如果出现次数最多，则替换相关信息
+              if(node[$] && node[$] > max) {
+                max = node[$];
+                maxWord = word;
+              }
+
+              for(let p in node) {
+                visit(node[p], word+p);
+              }
+            }
+
+            visit(this.root, "");
+            console.log(maxWord, max)
+          }
+        }
+
+        // 随机生成单词
+        function randowWord(length){
+          let word = "";
+          for(let i = 0; i < length; i++) {
+            word += String.fromCharCode(Math.random() * 26 + "a".charCodeAt(0));
+          }
+          return word
+        }
+
+        let tire = new Trie();
+
+        // 插入10W个4字单词
+        for(let i =0; i < 100000; i++) {
+          tire.insert(randowWord(4))
+        }
+      
+      </script>
+  </body>
+</html>

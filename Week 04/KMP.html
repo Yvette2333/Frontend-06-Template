@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>KMP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+      <script>
+        function KMP(source, pattern) {
+          // 新建一个与模式串相同长度的table，用于生成自重复的映射
+          let table = new Array(pattern.length).fill(0);
+
+          {
+              // ** 此处下标从1开始
+              let i = 1, j = 0;
+              // 自循环的处理
+              while(i < pattern.length){
+                // 1- 当前循环的第i个字符等于pattern[j]个字符，完全匹配
+                if(pattern[i] === pattern[j]) {
+                    // 2- 自增进入下一个循环
+                    ++i, ++j;
+                    table[i] = j;
+                } else {
+                  // 如果不匹配，那么table[i]个位置
+                  // aabaaac 情况，匹配到下标5的时候，需要映射到前一个a的下标，即table[i] = table[j]
+                  if(j > 0){
+                    j = table[j]
+                  } else {
+                    // 进入下一个循环
+                    ++i;
+                  }
+                }
+              }
+          }
+          console.log(table)
+
+          // 匹配字符串
+          {
+            // i 为source的下标，j为pattern的下标
+              let i = 0, j = 0;
+              while(i < source.length) {
+                if(pattern[j] === source[i]) {
+                   ++i, ++j;
+                } else {
+                  if(j > 0){
+                    j = table[j]
+                  } else {
+                    // 进入下一个循环
+                    ++i;
+                  }
+                }
+                // 模式串匹配完
+                if(j === pattern.length) {
+                  return true
+                }
+                
+              }
+               // 字符串走完仍没匹配到
+              return false
+          }
+         
+        }
+
+        KMP("", "abcdabce")
+        KMP("", "abababc")
+        console.log(KMP("abcdabce", "abab"))
+      </script>
+  </body>
+</html>
