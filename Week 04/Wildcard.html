@@ -7,6 +7,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
-      <script></script>
+      <script>
+        function find(source, pattern){
+          let startCount = 0;
+          // 获取模式串的总数
+          for(let i = 0; i< pattern.length; i++){
+            if (pattern[i] === "*"){
+              startCount++;
+            }
+          }
+          // 无*匹配，硬匹配
+          if(startCount === 0) {
+              for(let i = 0; i< pattern.length; i++) {
+                // 不包含？的情况
+                if (pattern[i] !== source[i] && pattern[i]!== "?" ) {
+                  return false
+                }
+              }
+              return true;
+          }
+
+          let i = 0;
+          let lastIndex = 0;
+
+          // 匹配第一个星号之前的内容
+          for(i = 0; pattern[i] !== "*"; i++ ) {
+            if (pattern[i] !== source[i] && pattern[i]!== "?" ) {
+                return false
+              }
+          } 
+          // 记录上次匹配到的index
+          lastIndex = i;
+
+          //匹配除最后一个*号
+          for(let p = 0; p < startCount - 1 ; p++) {
+              i++;
+              let subPattern = "";
+              while(pattern[i] !== "*") {
+                subPattern+=pattern[i]
+              }
+
+              let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]","g"));
+              reg.lastIndex = lastIndex;
+              
+              console.log(reg.exec(source));
+
+              lastIndex = reg.lastIndex;
+          }
+
+          // 最后一个*的匹配
+          for(let j=0; j<= source.length - lastIndex && pattern[pattern.length - j] !== "*"; j++) {
+            if (pattern[pattern.length - j] !== source[source.length - j]
+              && pattern[pattern.length - j] !== "?"
+            ){
+              return false
+            }
+          }
+          return true
+        }
+      </script>
   </body>
 </html>
